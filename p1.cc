@@ -30,8 +30,8 @@ void p1(std::string input_file, int threeshold ,std::string output_file){
 
 
   int main() {
-    std::string input_file = "many_objects_1.pgm"; // Changed to a distinct input file name
-    std::string output_file = "two_object_BW1.pgm"; // Changed to a distinct output file name
+    std::string input_file = "two_object_BW1.pgm"; // Changed to a distinct input file name
+    std::string output_file = "two_object_BW2.pgm"; // Changed to a distinct output file name
     p1(input_file, 128, output_file);    
     return 0;
 }

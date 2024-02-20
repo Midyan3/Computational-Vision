@@ -1,5 +1,6 @@
 #include "DisjSets.h"
-
+#include <iostream>
+using namespace std;
 /**
  * Construct the disjoint sets object.
  * numElements is the initial number of disjoint sets.
@@ -35,13 +36,13 @@ void DisjSets::unionSets( int root1, int root2 )
 //  * Error checks omitted again for simplicity.
 //  * Return the set containing x.
 //  */
-// int DisjSets::find( int x ) const
-// {
-//     if( s[ x ] < 0 )
-//         return x;
-//     else
-//         return find( s[ x ] );
-// }
+ int DisjSets::find( int x ) const
+ {
+    if( s[ x ] < 0 )
+        return x;
+    else
+        return find( s[ x ] );
+ }
 
 
 /**
