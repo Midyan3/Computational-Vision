@@ -4,8 +4,10 @@
 #include <vector>
 #include "DisjSets.h"
 #include <algorithm>
+#include <set>
 
 using namespace ComputerVisionProjects;
+using namespace std;
 
 /*
 Program 2 Write a labeling program named p2 that segments a binary image into several
@@ -55,8 +57,11 @@ void p2(std::string input_file ,std::string output_file){
             }
             else{
                 labels[i][j] = std::min(neighbors[0], neighbors[1]);
-                if(neighbors[0] != neighbors[1]){
-                    Equal.unionSets(neighbors[0] , neighbors[1]);
+                const int f0 = Equal.find(neighbors[0]);
+                const int f1 = Equal.find(neighbors[1]);
+                cout << "Union " << f0 << " " << f1 << endl;
+                if(f0 != f1){
+                  Equal.unionSets(f0, f1);                  
                 }
 
             }
@@ -68,20 +73,25 @@ void p2(std::string input_file ,std::string output_file){
     for (int i = 0; i < row; ++i) {
         for (int j = 0; j < col; ++j) {
             if (anImage->GetPixel(i, j) == 255 ) { // Foreground pixel
-                labels[i][j] = Equal.find(labels[i][j]);
+                labels[i][j] = Equal.find(labels[i][j]);                
                 
             }
         }
     } 
     int max = 0;
+    set<int> the_labels;
     for(int i = 0; i < row; i++){
         for(int j = 0; j < col; j++){
             max = std::max(max, labels[i][j]);
-            anImage->SetPixel(i, j, labels[i][j]);
+            anImage->SetPixel(i, j, labels[i][j] * 10);
+            if (labels[i][j] != 0) the_labels.insert(labels[i][j]);
+            
         }
     }
     std::cout<<"Max label is: "<<max<<std::endl;
+    for (const auto x: the_labels) cout << x << endl;
     ComputerVisionProjects::WriteImage(output_file, *anImage);
+    delete anImage;
 }
 
 /*
@@ -126,9 +136,15 @@ void p2(std::string input_file ,std::string output_file){
         std::cout<<std::endl;
     }
 */
-int main(){
-    std::string input_file = "two_object_BW1.pgm";// Changed to a distinct input file name
-    std::string output_file = "swb11.pmg"; // Changed to a distinct output file name
-    p2(input_file, output_file);
+int main(int argc, char **argv){
+    if (argc!=3) {
+    printf("Usage: %s input_file output_file\n", argv[0]);
+    return 0;
+  }
+  
+    const string input_filename(argv[1]);
+    const string output_filename(argv[2]);
+  
+    p2(input_filename, output_filename);
     return 0;
 }

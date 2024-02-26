@@ -3,7 +3,7 @@
 #include <iostream>
 
 using namespace ComputerVisionProjects;
-
+using namespace std;
 
 void p1(std::string input_file, int threeshold ,std::string output_file){
     std::cout<< "Got to p1\n"<<std::endl;
@@ -29,10 +29,17 @@ void p1(std::string input_file, int threeshold ,std::string output_file){
 
 
 
-  int main() {
-    std::string input_file = "two_object_BW1.pgm"; // Changed to a distinct input file name
-    std::string output_file = "two_object_BW2.pgm"; // Changed to a distinct output file name
-    p1(input_file, 128, output_file);    
+int main(int argc, char ** argv) {
+
+    if (argc!=4) {
+      printf("Usage: %s input_file threshold output_file\n", argv[0]);
+      return 0;
+    }
+    
+    const string input_filename(argv[1]);
+    const int threshold = atoi(argv[2]);
+    const string output_filename(argv[3]);
+    p1(input_filename, threshold, output_filename);    
     return 0;
 }
 
