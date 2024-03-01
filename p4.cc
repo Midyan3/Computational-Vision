@@ -5,6 +5,8 @@
 #include "image.h"
 #include <cmath>
 #include <fstream>
+#include <sstream>
+
 
 struct Moments{
     double Area = 0; // Total area (or count) of the object pixels
@@ -26,13 +28,52 @@ struct Moments{
 
 using namespace ComputerVisionProjects; 
 
-void p3(std::string input, std::string ObjectOutput, std::string output){
+double CompareMoments(const Moments& obj1, const Moments& obj2) {
+    double eRatio1 = obj1.e_min / obj1.e_max;
+    double eRatio2 = obj2.e_min / obj2.e_max;
+    double eRatioDiff = std::abs(eRatio1 - eRatio2);
+    double areaDiff = std::abs(obj1.Area - obj2.Area) / std::max(obj1.Area, obj2.Area);
+    double similarityScore =   eRatioDiff + areaDiff;
+    std::cout<<"Similarity Score: "<<similarityScore<<"\n";
+    return similarityScore;
+}
+
+void p4(std::string input, std::string ObjectDesc, std::string output){
+std::map<int, Moments> ObjectsFromTxt;
     std::map<int, Moments> Objects;
     Image *an_image = new Image();
-    std::ofstream ObjectDesc(ObjectOutput);
+    double threshold = 0.20;
     ReadImage(input, an_image);
     int row = static_cast<int>(an_image->num_rows());
     int col = static_cast<int>(an_image->num_columns());
+    std::ifstream ObjectDes(ObjectDesc); // Adjust the filename as needed
+
+    if (!ObjectDes.is_open()) {
+        std::cerr << "Failed to open the file." << std::endl;
+        return;
+    }
+
+    std::string line;
+    while (getline(ObjectDes, line)) {
+        std::istringstream iss(line);
+        int label;
+        Moments moment;
+        double ratio, thetaDegrees;
+
+        if (!(iss >> label >> moment.CentroidX >> moment.CentroidY >> moment.e_min >> moment.Area >> ratio >> thetaDegrees)) {
+            std::cerr << "Error parsing line: " << line << std::endl;
+            continue; // Skip malformed lines
+        }
+
+        // Convert theta from degrees to radians and compute e_max
+        moment.Theta = thetaDegrees * M_PI / 180.0;
+        moment.e_max = moment.e_min / ratio;
+
+        ObjectsFromTxt[label] = moment;
+    }
+
+    ObjectDes.close();
+
     for(int x = 0; x < row; x++){
         for(int y = 0; y < col; y++){
             if(an_image->GetPixel(x, y) == 0 ) continue;
@@ -59,16 +100,19 @@ void p3(std::string input, std::string ObjectOutput, std::string output){
         Obj.e_min = Obj.a*sin(Obj.Theta)*sin(Obj.Theta) - Obj.b*sin(Obj.Theta)*cos(Obj.Theta) + Obj.c*cos(Obj.Theta)*cos(Obj.Theta);
         Obj.e_max = Obj.a*sin(Obj.Theta + M_PI/2)*sin(Obj.Theta + M_PI/2) - Obj.b*sin(Obj.Theta + M_PI/2)*cos(Obj.Theta + M_PI/2) + Obj.c*cos(Obj.Theta + M_PI/2)*cos(Obj.Theta + M_PI/2);
         Obj.row = Obj.CentroidY*cos(Obj.Theta) - Obj.CentroidX*sin(Obj.Theta);
-        DrawLine(Obj.CentroidX, Obj.CentroidY, Obj.CentroidX + 30*cos(Obj.Theta), Obj.CentroidY + 30*sin(Obj.Theta), 255, an_image);
-        ObjectDesc<<labels<<" "<< Obj.CentroidX<<" "<<Obj.CentroidY<<" "<<Obj.e_min<<" "<<Obj.Area<<" "<< Obj.e_min/Obj.e_max<<" "<<Obj.Theta*180/M_PI<<"\n";
         labels++; 
     }
-    ObjectDesc.close();
 
+    for(const auto& [label, ObjTxt] : ObjectsFromTxt){
+        for(const auto& [label2, Obj] : Objects){
+            if(CompareMoments(ObjTxt, Obj) < threshold){
+                DrawLine(Obj.CentroidX, Obj.CentroidY, Obj.CentroidX + 30*cos(Obj.Theta), Obj.CentroidY + 30*sin(Obj.Theta), 255, an_image);
+            }
+        }
+    }
     WriteImage(output, *an_image);
 
 }
-
 
 int main(int argc, char **argv){
     if(argc != 4){
@@ -76,8 +120,8 @@ int main(int argc, char **argv){
         return 0;
     }
     std::string input(argv[1]);
-    std::string ObjectOutput(argv[2]);
+    std::string ObjectDesc(argv[2]);
     std::string output(argv[3]);
-    p3(input, ObjectOutput, output);
+    p4(input, ObjectDesc, output);
     return 0;
 }
