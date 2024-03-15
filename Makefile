@@ -71,6 +71,14 @@ PROGRAM_NAME_6=p6
 $(PROGRAM_NAME_6): $(CC_OBJ_6)
 	g++ $(C++FLAG) -o $(EXEC_DIR)/$@ $(CC_OBJ_6) $(INCLUDES) $(LIBS_ALL)
 
+
+CC_OBJ_7=image.o h3.o
+
+PROGRAM_NAME_7=p7
+
+$(PROGRAM_NAME_7): $(CC_OBJ_7)
+	g++ $(C++FLAG) -o $(EXEC_DIR)/$@ $(CC_OBJ_7) $(INCLUDES) $(LIBS_ALL)
+
 all:
 	make $(PROGRAM_NAME_1)
 	make $(PROGRAM_NAME_2)
@@ -78,5 +86,6 @@ all:
 	make $(PROGRAM_NAME_4)
 	make $(PROGRAM_NAME_5)
 	make $(PROGRAM_NAME_6) 
+	make $(PROGRAM_NAME_7)
 clean:
-	(rm -f *.o; rm p1; rm p2; rm p3; rm p4; rm p5; rm p6) # Update this line
+	(rm -f *.o; rm p1; rm p2; rm p3; rm p4; rm p5; rm p6; rm p7) # Update this line
