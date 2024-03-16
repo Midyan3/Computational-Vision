@@ -140,8 +140,13 @@ bool WriteImage(const string &filename, const Image &an_image) {
 // "Computer Graphics. Principles and practice", 
 // 2nd ed., 1990, section 3.2.2);  
 void DrawLine(int x0, int y0, int x1, int y1, int color,
-	      Image *an_image) {  
-  if (an_image == nullptr) abort();
+	      Image *an_image) {
+          std::cout<<"Got to DrawLine\n";  
+  if (an_image == nullptr){
+    std::cout<<"Somnething Wrong";
+    abort();
+  } 
+  std::cout<<"Got to DrawLine 2\n";
 
 #ifdef SWAP
 #undef SWAP

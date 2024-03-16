@@ -22,22 +22,20 @@ void h1(std::string input, std::string output){
 
     std::vector<std::vector<int>> sobetX = {{-1, 0, 1}, {-2, 0, 2}, {-1, 0, 1}};
     std::vector<std::vector<int>> sobetY = {{-1, -2, -1}, {0, 0, 0}, {1, 2, 1}};
-    for(int i = 0; i < an_image.num_columns(); i++){
-        for(int j = 0; j < an_image.num_rows(); j++){
+    for (int i = 1; i < an_image.num_columns() - 1; i++) {
+        for (int j = 1; j < an_image.num_rows() - 1; j++) {
             int sumX = 0;
             int sumY = 0;
-            for(int k = 0; k < 3; k++){
-                for(int l = 0; l < 3; l++){
+            for (int k = 0; k < 3; k++) {
+                for (int l = 0; l < 3; l++) {
                     int x = i + k - 1;
                     int y = j + l - 1;
-                    if(x >= 0 && x < an_image.num_columns() && y >= 0 && y < an_image.num_rows()){
-                        sumX += an_image.GetPixel(y, x) * sobetX[k][l];
-                        sumY += an_image.GetPixel(y, x) * sobetY[k][l];
-                    }
+                    sumX += an_image.GetPixel(y, x) * sobetX[k][l];
+                    sumY += an_image.GetPixel(y, x) * sobetY[k][l];
                 }
             }
             int sum = std::sqrt(sumX * sumX + sumY * sumY);
-            if(sum > 255){
+            if (sum > 255) {
                 sum = 255;
             }
             output_image.SetPixel(j, i, sum);

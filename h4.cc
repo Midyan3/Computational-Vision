@@ -16,9 +16,9 @@ struct Moments{
     double CentroidY = 0; 
 };
 void h4(std::string OrginalImage, std::string Voting_Array, int threshold, std::string OutputImage) {
-     Image an_image;
+     Image *an_image = new Image();
 
-    if (!ReadImage(OrginalImage, &an_image)) {
+    if (!ReadImage(OrginalImage, an_image)) {
         std::cout << "Can't open file " << OrginalImage << std::endl;
         return;
     }
@@ -30,22 +30,24 @@ void h4(std::string OrginalImage, std::string Voting_Array, int threshold, std::
     }
 
     int theta, rho, value;
-    int rhoMax = std::sqrt(std::pow(an_image.num_columns(), 2) + std::pow(an_image.num_rows(), 2));
+    int rhoMax = std::sqrt(std::pow(an_image->num_columns(), 2) + std::pow(an_image->num_rows(), 2));
 
     Image Voting_Array_Image;
     Voting_Array_Image.AllocateSpaceAndSetSize(181, rhoMax + 1);
     Voting_Array_Image.SetNumberGrayLevels(255);  // Assuming the voting array uses grayscale values
 
+    WriteImage("voting_array.pgm", Voting_Array_Image);
     while (file >> theta >> rho >> value) {
         if (value > threshold){
             Voting_Array_Image.SetPixel(theta, rho, 255);
         } 
     }
-
     file.close();
      int label = 1;
     int row = static_cast<int>(Voting_Array_Image.num_rows());
     int col = static_cast<int>(Voting_Array_Image.num_columns());
+    std::cout<<row<<std::endl;
+    std::cout<<col<<std::endl;  
     DisjSets Equal(row*col );
     std::vector<std::vector<int>> labels(row, std::vector<int>(col, 0));
     for (int i = 0; i < row; ++i) {
@@ -93,12 +95,13 @@ void h4(std::string OrginalImage, std::string Voting_Array, int threshold, std::
     for(int i = 0; i < row; i++){
         for(int j = 0; j < col; j++){
             if(labels[i][j] != 0){ 
-                Voting_Array_Image.SetPixel(i, j, labels[i][j] * 10 + 50);
+                Voting_Array_Image.SetPixel(i, j, labels[i][j] * 10);
             }
            
         }
     }
-     std::map<int, Moments> Objects;
+    
+    std::map<int, Moments> Objects;
     for(int x = 0; x < row; x++){
         for(int y = 0; y < col; y++){
             if(Voting_Array_Image.GetPixel(x, y) == 0 ) continue;
@@ -108,52 +111,54 @@ void h4(std::string OrginalImage, std::string Voting_Array, int threshold, std::
             Obj.SumY += y;
         }
     }
+    WriteImage("voting_array.pgm", Voting_Array_Image);
+    
 for (auto& [label, Obj] : Objects) {
-    Obj.CentroidX = Obj.SumX / Obj.Area;  // Average theta in degrees
-    Obj.CentroidY = Obj.SumY / Obj.Area;  // Average rho
-    std::cout << label << " Theta " << Obj.CentroidX << " Rho " << static_cast<int>(Obj.CentroidY) << std::endl;
-
-    double theta1 = round(Obj.CentroidX) * M_PI / 180.0;  // Convert theta to radians
+    Obj.CentroidX = Obj.SumX / Obj.Area;
+    Obj.CentroidY = Obj.SumY / Obj.Area; 
+    double theta1 = Obj.CentroidX* M_PI / 180.0;  // Theta in radians
     int rho1 = static_cast<int>(Obj.CentroidY);
 
-    int width = an_image.num_columns();
-    int height = an_image.num_rows();
+    int M = an_image->num_columns();  // Width of the image
+    int N = an_image->num_rows();     // Height of the image
 
-    // Calculate intersection points with the image boundaries
-    double sin_theta = sin(theta1);
-    double cos_theta = cos(theta1);
+    // Using the line equation: rho = x * cos(theta) + y * sin(theta)
+    // Solve for y when x = 0
+    int y1 = (rho1 - 0 * cos(theta1)) / sin(theta1);
 
-    std::vector<std::pair<int, int>> points;
+    // Solve for x when y = 0
+    int x2 = (rho1 - 0 * sin(theta1)) / cos(theta1);
 
-    // Check for division by zero for horizontal and vertical lines
-    if (std::abs(cos_theta) > 1e-6) {
-        int x0 = static_cast<int>(rho1 / cos_theta);  // Intersection with top boundary (y = 0)
-        int x1 = static_cast<int>((rho1 - height * sin_theta) / cos_theta);  // Bottom boundary (y = height)
+    // Solve for y when x = M - 1
+    int y3 = (rho1 - (M) * cos(theta1)) / sin(theta1);
 
-        if (x0 >= 0 && x0 <= width) points.emplace_back(x0, 0);
-        if (x1 >= 0 && x1 <= width) points.emplace_back(x1, height);
-    }
+    // Solve for x when y = N - 1
+    int x4 = (rho1 - (N) * sin(theta1)) / cos(theta1);
 
-    if (std::abs(sin_theta) > 1e-6) {
-        int y0 = static_cast<int>(rho1 / sin_theta);  // Left boundary (x = 0)
-        int y1 = static_cast<int>((rho1 - width * cos_theta) / sin_theta);  // Right boundary (x = width)
+    // Check which points are within the boundaries of the image
+    std::vector<std::pair<int, int>> validPoints;
 
-        if (y0 >= 0 && y0 <= height) points.emplace_back(0, y0);
-        if (y1 >= 0 && y1 <= height) points.emplace_back(width, y1);
-    }
+    if (y1 >= 0 && y1 < N - 2) validPoints.emplace_back(0, y1);
+    if (x2 >= 0 && x2 < M - 2) validPoints.emplace_back(x2, 0);
+    if (y3 >= 0 && y3 < N - 2) validPoints.emplace_back(M - 1, y3);
+    if (x4 >= 0 && x4 < M - 2) validPoints.emplace_back(x4, N - 1);
 
-    // Now, you have the points where the line intersects the image boundaries
-    // You can draw the line if there are at least two intersection points
-    if (points.size() >= 2) {
-        std::cout << "Drawing line " << label << " From " << points[0].first << " " << points[0].second << " To " << points[1].first << " " << points[1].second << std::endl;
-        DrawLine(points[0].first, points[0].second, points[1].first, points[1].second, 155, &an_image);
+    // Draw line if exactly two points are within the image boundaries
+    if (validPoints.size() == 2) {
+        std::cout << "Drawing line for object " << label << std::endl;
+        std::cout<< validPoints[0].first << " " << validPoints[0].second << " " << validPoints[1].first << " " << validPoints[1].second << std::endl;
+        DrawLine(validPoints[0].second,validPoints[0].first , 
+                validPoints[1].second , validPoints[1].first, 180, an_image);
     }
 }
+
+if (!WriteImage(OutputImage, *an_image)) {
+    std::cout << "Can't write to file " << OutputImage << std::endl;
+}
+    if (!WriteImage(OutputImage, *an_image)) {
+            std::cout << "Can't write to file " << OutputImage << std::endl;
+        }
     
-    if (!WriteImage(OutputImage, an_image)) {
-        std::cout << "Can't write to file " << OutputImage << std::endl;
-    }
-  
 }
 
 int main(int argc, char **argv) {
