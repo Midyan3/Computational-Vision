@@ -31,7 +31,7 @@ void h4(std::string OrginalImage, std::string Voting_Array, int threshold, std::
 
     int theta, rho, value;
     int rhoMax = std::sqrt(std::pow(an_image->num_columns(), 2) + std::pow(an_image->num_rows(), 2));
-
+    
     Image Voting_Array_Image;
     Voting_Array_Image.AllocateSpaceAndSetSize(181, rhoMax + 1);
     Voting_Array_Image.SetNumberGrayLevels(255);  // Assuming the voting array uses grayscale values
@@ -124,37 +124,37 @@ for (auto& [label, Obj] : Objects) {
 
     // Using the line equation: rho = x * cos(theta) + y * sin(theta)
     // Solve for y when x = 0
-    int y1 = (rho1 - 0 * cos(theta1)) / sin(theta1);
+    int y1 = std::round(rho1 / sin(theta1));
 
     // Solve for x when y = 0
-    int x2 = (rho1 - 0 * sin(theta1)) / cos(theta1);
+    int x2 = std::round(rho1/ cos(theta1)) ;
 
-    // Solve for y when x = M - 1
-    int y3 = (rho1 - (M) * cos(theta1)) / sin(theta1);
+    // Solve for y when x = N - 1
+    int y3 =  std::round(rho1 - (N-1) * cos(theta1)) / sin(theta1);
 
-    // Solve for x when y = N - 1
-    int x4 = (rho1 - (N) * sin(theta1)) / cos(theta1);
+    // Solve for x when y = M - 1
+    int x4 = std::round((rho1 - (M -1) * sin(theta1)) / cos(theta1));
 
     // Check which points are within the boundaries of the image
     std::vector<std::pair<int, int>> validPoints;
 
-    if (y1 >= 0 && y1 < N - 2) validPoints.emplace_back(0, y1);
-    if (x2 >= 0 && x2 < M - 2) validPoints.emplace_back(x2, 0);
-    if (y3 >= 0 && y3 < N - 2) validPoints.emplace_back(M - 1, y3);
-    if (x4 >= 0 && x4 < M - 2) validPoints.emplace_back(x4, N - 1);
+    if (y1 >= 0 && y1 < M - 1) validPoints.emplace_back(0, y1);
+    if (x2 >= 0 && x2 < N - 1) validPoints.emplace_back(x2, 0);
+    if (y3 >= 0 && y3 < M - 1) validPoints.emplace_back(N -1 , y3);
+    if (x4 >= 0 && x4 < N - 1) validPoints.emplace_back(x4, M -1 );
 
     // Draw line if exactly two points are within the image boundaries
     if (validPoints.size() == 2) {
         std::cout << "Drawing line for object " << label << std::endl;
         std::cout<< validPoints[0].first << " " << validPoints[0].second << " " << validPoints[1].first << " " << validPoints[1].second << std::endl;
-        DrawLine(validPoints[0].second,validPoints[0].first , 
-                validPoints[1].second , validPoints[1].first, 180, an_image);
+        DrawLine(validPoints[0].first,validPoints[0].second , 
+                 validPoints[1].first,  validPoints[1].second, 180, an_image);
     }
 }
-
-if (!WriteImage(OutputImage, *an_image)) {
-    std::cout << "Can't write to file " << OutputImage << std::endl;
-}
+    std::cout<<rhoMax;
+    if (!WriteImage(OutputImage, *an_image)) {
+        std::cout << "Can't write to file " << OutputImage << std::endl;
+    }
     if (!WriteImage(OutputImage, *an_image)) {
             std::cout << "Can't write to file " << OutputImage << std::endl;
         }

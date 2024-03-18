@@ -85,6 +85,13 @@ PROGRAM_NAME_8=p8
 
 $(PROGRAM_NAME_8): $(CC_OBJ_8)
 	g++ $(C++FLAG) -o $(EXEC_DIR)/$@ $(CC_OBJ_8) $(INCLUDES) $(LIBS_ALL)
+
+CC_OBJ_9=image.o DisjSets.o h5.o
+
+PROGRAM_NAME_9=p9
+
+$(PROGRAM_NAME_9): $(CC_OBJ_9)
+	g++ $(C++FLAG) -o $(EXEC_DIR)/$@ $(CC_OBJ_9) $(INCLUDES) $(LIBS_ALL)
 all:
 	make $(PROGRAM_NAME_1)
 	make $(PROGRAM_NAME_2)
@@ -94,5 +101,6 @@ all:
 	make $(PROGRAM_NAME_6) 
 	make $(PROGRAM_NAME_7)
 	make $(PROGRAM_NAME_8)
+	make $(PROGRAM_NAME_9)
 clean:
-	(rm -f *.o; rm p1; rm p2; rm p3; rm p4; rm p5; rm p6; rm p7, rm p8) # Update this line
+	(rm -f *.o; rm p1; rm p2; rm p3; rm p4; rm p5; rm p6; rm p7, rm p8, rm p9) # Update this line
