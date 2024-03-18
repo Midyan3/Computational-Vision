@@ -9,6 +9,13 @@
 
 using namespace ComputerVisionProjects;
 
+/// @brief H3 Function to perform Hough Transform and write results to an image and text file. Takes in an input image, output binary image, and output text file. The output is 181 x maxRho image and a text file with the theta, rho, and value of the accumulator.
+/// @param input
+/// @param outputBinary
+/// @param outputText
+
+
+
 // Function to perform Hough Transform and write results to an image and text file.
 void h3(std::string input, std::string outputBinary, std::string outputText) {
     Image an_image;
@@ -147,6 +154,7 @@ void h3(std::string input, std::string outputBinary, std::string outputText) {
 */
 
 int main(int argc, char **argv){
+    // Check for the correct number of arguments.
     if (argc!=4) {
         std::cout << "Usage: " << argv[0] << " <input_image.pgm> <OutputBinrary.pgm> <Output.pgm>" << std::endl;
         return 0;

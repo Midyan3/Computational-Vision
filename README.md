@@ -1,0 +1,1 @@
+Everything works as it should. H1, H2, H3, and H4 are fully complete. There are no known issues. H4 produces another pgm file called voting_array.pgm but that was just for testing so please forget about it. 

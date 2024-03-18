@@ -12,9 +12,17 @@ struct Moments{
     double Area = 0; // Total area (or count) of the object pixels
     double SumX = 0; // Sum of x coordinates of all pixels
     double SumY = 0; // Sum of y coordinates of all pixels
-    double CentroidX = 0; 
-    double CentroidY = 0; 
+    double CentroidX = 0; // X coordinate of the centroid
+    double CentroidY = 0; // Y coordinate of the centroid
 };
+
+/// @brief H4 takes in an the original image, a voting array, a threshold and writes an image with the lines of the objects in the voting array. It uses the sequential labeling algorithm from the previous homework to label the objects in the voting array as well as the moments of the objects.
+/// @param OrginalImage 
+/// @param Voting_Array 
+/// @param threshold 
+/// @param OutputImage 
+
+
 void h4(std::string OrginalImage, std::string Voting_Array, int threshold, std::string OutputImage) {
      Image *an_image = new Image();
 
@@ -22,27 +30,29 @@ void h4(std::string OrginalImage, std::string Voting_Array, int threshold, std::
         std::cout << "Can't open file " << OrginalImage << std::endl;
         return;
     }
-
+    // Open the file
     std::ifstream file(Voting_Array);
     if (!file) {
         std::cout << "Can't open file " << Voting_Array << std::endl;
         return;
     }
-
+    // Declare variables to store the values
     int theta, rho, value;
     int rhoMax = std::sqrt(std::pow(an_image->num_columns(), 2) + std::pow(an_image->num_rows(), 2));
-    
+    // Create a new image to store the voting array
     Image Voting_Array_Image;
     Voting_Array_Image.AllocateSpaceAndSetSize(181, rhoMax + 1);
     Voting_Array_Image.SetNumberGrayLevels(255);  // Assuming the voting array uses grayscale values
-
+    // Read the values from the file and store them in the image
     WriteImage("voting_array.pgm", Voting_Array_Image);
     while (file >> theta >> rho >> value) {
         if (value > threshold){
             Voting_Array_Image.SetPixel(theta, rho, 255);
         } 
     }
+    // Close the file
     file.close();
+    //Sequential Labeling for the voting array from previous homework
      int label = 1;
     int row = static_cast<int>(Voting_Array_Image.num_rows());
     int col = static_cast<int>(Voting_Array_Image.num_columns());
@@ -100,7 +110,7 @@ void h4(std::string OrginalImage, std::string Voting_Array, int threshold, std::
            
         }
     }
-    
+    // Calculate the moments of the objects. Centroid and area. Also from previous homework
     std::map<int, Moments> Objects;
     for(int x = 0; x < row; x++){
         for(int y = 0; y < col; y++){
@@ -112,7 +122,7 @@ void h4(std::string OrginalImage, std::string Voting_Array, int threshold, std::
         }
     }
     WriteImage("voting_array.pgm", Voting_Array_Image);
-    
+    // Draw the lines for each object
 for (auto& [label, Obj] : Objects) {
     Obj.CentroidX = Obj.SumX / Obj.Area;
     Obj.CentroidY = Obj.SumY / Obj.Area; 
@@ -137,7 +147,7 @@ for (auto& [label, Obj] : Objects) {
 
     // Check which points are within the boundaries of the image
     std::vector<std::pair<int, int>> validPoints;
-
+    // Add the points to the vector if they are within the boundaries
     if (y1 >= 0 && y1 < M - 1) validPoints.emplace_back(0, y1);
     if (x2 >= 0 && x2 < N - 1) validPoints.emplace_back(x2, 0);
     if (y3 >= 0 && y3 < M - 1) validPoints.emplace_back(N -1 , y3);
@@ -145,24 +155,20 @@ for (auto& [label, Obj] : Objects) {
 
     // Draw line if exactly two points are within the image boundaries
     if (validPoints.size() == 2) {
-        std::cout << "Drawing line for object " << label << std::endl;
-        std::cout<< validPoints[0].first << " " << validPoints[0].second << " " << validPoints[1].first << " " << validPoints[1].second << std::endl;
+        // Draw the line on the image
         DrawLine(validPoints[0].first,validPoints[0].second , 
                  validPoints[1].first,  validPoints[1].second, 180, an_image);
     }
 }
-    std::cout<<rhoMax;
+    // Write the image to the file
     if (!WriteImage(OutputImage, *an_image)) {
         std::cout << "Can't write to file " << OutputImage << std::endl;
     }
-    if (!WriteImage(OutputImage, *an_image)) {
-            std::cout << "Can't write to file " << OutputImage << std::endl;
-        }
     
 }
 
 int main(int argc, char **argv) {
-
+    // Check for the right number of arguments
     if (argc != 5) {
         std::cout <<
             "Usage: " << argv[0] << " <input_image> <voting_array> <threshold> <output_image>" << std::endl;
