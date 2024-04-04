@@ -55,7 +55,7 @@ void s2(std::string filename, std::string sphere1, std::string sphere2, std::str
         double y = maxCord.first - centerY;
         z = sqrt(pow(radius, 2) - pow(x, 2) - pow(y, 2));
         double length = sqrt(pow(x, 2) + pow(y, 2) + pow(z, 2));    
-        outputFile << max * x/ length<< " " << max * y / length  << " " << max * z / length<< std::endl; 
+        outputFile << max * x/ length  << " " <<max * y / length << " " << max * z / length<< std::endl; 
         std::cout<<max * x/ length<< " " << max * y / length  << " " << max* z / length<< std::endl;
         
     }
