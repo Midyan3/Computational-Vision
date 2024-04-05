@@ -25,22 +25,31 @@ struct Moments{
     double row = 0; // Row of the object
 };
 
-
+/**
+ * @brief Computes the moments of an object in an image and the radius of the object
+ * 
+ * @param input 
+ * @param threshold 
+ * @param output_file 
+ */
 void s1(std::string input, int threshold, std::string output_file){
+// Read the image
 Image img;
 ReadImage(input, &img);
-
+// Get the number of rows and columns
 int rows = img.num_rows();
 int cols = img.num_columns();
-
+// Initialize the variables to store the minimum and maximum values of the object
 int minLeft = INT32_MAX, minTop = INT32_MAX, maxRight = 0, maxBottom = 0;
 
 for (int i = 0; i < rows; i++) {
     for (int j = 0; j < cols; j++) {
+        // If the pixel is less than the threshold, set it to 0
         if (img.GetPixel(i, j) < threshold) {
             img.SetPixel(i, j, 0);
  
-        } else {           
+        } else {   
+            // Update the minimum and maximum values to find the bounding box in thus using this to calculate the radius        
             if (j < minLeft) {
                 minLeft = j;
             }
@@ -53,12 +62,13 @@ for (int i = 0; i < rows; i++) {
             if (i > maxBottom) {
                 maxBottom = i;
             }
+            // Set the pixel to 255 if it is above the threshold
             img.SetPixel(i, j, 255);
         }
     }
 }
 
-
+    // Code to find the connected components from previous assignment
     int label = 1;
     int row = static_cast<int>(img.num_rows());
     int col = static_cast<int>(img.num_columns());
@@ -111,6 +121,7 @@ for (int i = 0; i < rows; i++) {
             
         }
     }
+    // Calculate the moments of the objects from the connected components. Also last assignment
 
     std::map<int, Moments> Objects;
     std::ofstream ObjectDesc(output_file);
@@ -127,8 +138,10 @@ for (int i = 0; i < rows; i++) {
     for(auto& [label, Obj] : Objects){
         Obj.CentroidX = Obj.SumX / Obj.Area;
         Obj.CentroidY = Obj.SumY / Obj.Area;
-        ObjectDesc<<Obj.CentroidY<<" "<< Obj.CentroidX<<" "<< (abs(maxRight - minLeft) + abs(maxBottom - minTop)) / 4;
+        // Calculate the centroids of the object/radius and store it in the file
+        ObjectDesc<<Obj.CentroidX<<" "<<Obj.CentroidY <<" "<< (abs(maxRight - minLeft) + abs(maxBottom - minTop)) / 4;
     } 
+    // Close the file
     ObjectDesc.close();
     std::cout << "MinLeft: " << minLeft << " MinTop: " << minTop << " MaxRight: " << maxRight << " MaxBottom: " << maxBottom << std::endl;
 
