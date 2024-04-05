@@ -11,13 +11,19 @@
 
 using namespace ComputerVisionProjects; 
 
-
+// Struct to store the albedos
 struct albedos{
     int x;
     int y;
     double albedo;
 };
 
+/**
+ * @brief Calculates the inverse of a 3x3 matrix and returns it
+ * 
+ * @param m 
+ * @return std::vector<std::vector<double>> 
+ */
 std::vector<std::vector<double>> calculateInverse(const std::vector<std::vector<double>>& m) {
   double det = m[0][0] * (m[1][1] * m[2][2] - m[2][1] * m[1][2]) -
                  m[0][1] * (m[1][0] * m[2][2] - m[1][2] * m[2][0]) +
@@ -40,6 +46,16 @@ std::vector<std::vector<double>> calculateInverse(const std::vector<std::vector<
     return minv;
 }
 
+/**
+ * @brief Computes the surface normals of an object given three images of the object under different lighting conditions
+ * 
+ * @param input_directions_filename 
+ * @param input_sphere_filenames 
+ * @param step 
+ * @param threshold 
+ * @param output_normals_image_filename 
+ * @param output_albedo_image_filename 
+ */
 
 void s3(std::string input_directions_filename,  const std::array<std::string, 3>& input_sphere_filenames, int step, int threshold, std::string output_normals_image_filename, std::string output_albedo_image_filename) {
     // Load the images
@@ -62,6 +78,7 @@ void s3(std::string input_directions_filename,  const std::array<std::string, 3>
         std::cerr << "Can't open file " << input_directions_filename << std::endl;
         exit(1);
     }
+    // Load the directions into a matrix
     std::vector<std::vector<double>> matrix;
     std::ifstream file(input_directions_filename);
     std::string line;
@@ -77,20 +94,9 @@ void s3(std::string input_directions_filename,  const std::array<std::string, 3>
 
         matrix.push_back(row);
     }
-    for(auto& row : matrix){
-        for(auto& val : row){
-            std::cout<<val<<" ";
-        }
-        std::cout<<std::endl;
-    }
-
+    // Calculate the inverse of the matrix
     matrix = calculateInverse(matrix);
-    for(auto& row : matrix){
-        for(auto& val : row){
-            std::cout<<val<<" ";
-        }
-        std::cout<<std::endl;
-    }
+    // Initialize the output image
     Image output;
     std::vector<albedos> albedoss;
     double max_albedo = 0;
@@ -99,12 +105,15 @@ void s3(std::string input_directions_filename,  const std::array<std::string, 3>
     output.SetNumberGrayLevels(255);
     Image normals = object_image_1; 
     int first(0) , second(0), third(0);
+    // Iterate through the images and calculate the albedo as well as draw the normals
     for(int i = 0; i < object_image_1.num_rows(); i++){
         for(int j = 0; j < object_image_1.num_columns();j++){
             if(object_image_1.GetPixel(i, j) > threshold && object_image_2.GetPixel(i, j) > threshold && object_image_3.GetPixel(i, j) > threshold){
+                // Get the pixel values
                 first = object_image_1.GetPixel(i, j);
                 second = object_image_2.GetPixel(i, j);
                 third = object_image_3.GetPixel(i, j);
+                // Calculate the albedo
                 double n0 = first * matrix[0][0] + second * matrix[0][1] + third * matrix[0][2];
                 double n1 = first * matrix[1][0] + second * matrix[1][1] + third * matrix[1][2];
                 double n2 = first * matrix[2][0] + second * matrix[2][1] + third * matrix[2][2];
@@ -112,14 +121,15 @@ void s3(std::string input_directions_filename,  const std::array<std::string, 3>
                 if(albedo > max_albedo){
                     max_albedo = albedo;
                 }
+                // Store the albedos in a vector
                 albedos temp;
                 temp.x = i;
                 temp.y = j;
                 temp.albedo = albedo;
+                // Store the albedos in a vector
                 albedoss.push_back(temp);
+                // Draw the normals if the step is met
                 if(i % step == 0 && j % step == 0){
-                
-                
                 n0 = n0/albedo;
                 n1 = n1/albedo;
                 n2 = n2/albedo;
@@ -130,13 +140,14 @@ void s3(std::string input_directions_filename,  const std::array<std::string, 3>
                 DrawLine(i, j, i + n0*10, j + n1*10, 255, &normals);
                 normals.SetPixel(i, j, 0);
                 /*
-                dont display, save them in vector and then find biigest one divide all by the biggest one and then mutpliy 255
+                dont display, save them in vector and then find biggest one divide all by the biggest one and then mutpliy 255
                 
                 */
                 } 
             }
         }
     }
+    // Normalize the albedos and write the images of albedos and normals
     for(auto& albedo : albedoss){
         output.SetPixel(albedo.x, albedo.y, albedo.albedo/max_albedo * 255);
     }
